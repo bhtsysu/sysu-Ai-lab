@@ -1,0 +1,198 @@
+import copy
+def ResolutionF0L(KB):
+    list1=[]
+    list2=[]
+    list3=[]
+    for iter in KB:
+        list1.append(list(iter))
+        list2.append([])
+    for i in range(len(list1)):
+        for j in range(len(list1[i])):
+            list1[i][j]=list1[i][j].split('(')
+            list1[i][j][len(list1[i][j])-1]=list1[i][j][len(list1[i][j])-1].rstrip(')')
+            list1[i][j][len(list1[i][j])-1]=list1[i][j][len(list1[i][j])-1].split(',')
+    Slist=[]
+    Dlist=[]
+    for i in range(len(list1)):
+        if len(list1[i])==1:
+            Slist.append(list1[i])
+        else:
+            Dlist.append(list1[i])
+    #单文字子句单独放在一个列表
+    i=0
+    while i<len(Slist):
+        for j in range(len(Dlist)):
+            for jj in range (len(Dlist[j])):
+                strn=str(list1.index(Slist[i]))+str(list1.index(Dlist[j]))+str(jj)
+                if list3.count(strn)==0:
+                    list3.append(strn)
+                    str1=Slist[i][0][0]
+                    str2=Dlist[j][jj][0]
+                    if str1[0]=='~' and str2[0]!='~' or str2[0]=='~' and str1[0]!='~':
+                                str1=str1.lstrip('~')
+                                str2=str2.lstrip('~')
+                                if str1!=str2:
+                                    break
+                                #谓词名称相同
+                                index1=Slist[i][0][1]
+                                index2=Dlist[j][jj][1]
+                                #常量和变量列表
+                                if index1==index2:#列表中所有元素一一对应
+                                    newlist=[]
+                                    for k in range(len(Dlist[j])):
+                                        if k!=jj:
+                                            newlist.append(Dlist[j][k])
+                                    list1.append(newlist)
+                                    list2.append([])
+                                    ans1=list1.index(Slist[i])
+                                    ans2=list1.index(Dlist[j])
+                                    #找出在总列表中的位置
+                                    list2[len(list2)-1].append(str(ans1+1))
+                                    list2[len(list2)-1].append(str(ans2+1)+chr(97+jj))
+                                    if len(newlist)==1:
+                                        for k in range (len(Slist)):
+                                            str12=newlist[0][0]
+                                            str22=Slist[k][0][0]
+                                            if str12[0]=='~' and str22[0]!='~' or str22[0]=='~' and str12[0]!='~':
+                                                str12=str12.lstrip('~')
+                                                str22=str22.lstrip('~')
+                                                if str12==str22:
+                                                    if newlist[0][1]==Slist[k][0][1]:
+                                                        list1.append([])
+                                                        list2.append([])
+                                                        list2[len(list2)-1].append(str(list1.index(newlist)+1))
+                                                        list2[len(list2)-1].append(str(list1.index(Slist[k])+1))
+                                                        PrintList(list1,list2)
+                                                        return
+                                                    else:
+                                                        q=0
+                                                        Tlist=[]
+                                                        ans1=list1.index(newlist)
+                                                        ans2=list1.index(Slist[k])
+                                                        Tlist.append(str(ans1+1))
+                                                        Tlist.append(str(ans2+1))
+                                                        for kk in range(len(Slist[k][0][1])):
+                                                            if len(newlist[0][1][kk])>=3 and len(Slist[k][0][1][kk])>=3:
+                                                                q=1
+                                                                break
+                                                            elif len(newlist[0][1][kk])<3:
+                                                                Tlist.append(newlist[0][1][kk])
+                                                                Tlist.append(Slist[k][0][1][kk])
+                                                            else: 
+                                                                Tlist.append(Slist[k][0][1][kk])
+                                                                Tlist.append(newlist[0][1][kk])
+                                                        if q==0:
+                                                            list2.append(Tlist)
+                                                            list1.append([])
+                                                            PrintList(list1,list2)
+                                                            return
+                                        Slist.append(newlist)
+                                    else:
+                                        Dlist.append(newlist)
+                                else:
+                                    temp1=copy.deepcopy(Slist[i]) #深拷贝
+                                    temp2=copy.deepcopy(Dlist[j])
+                                    q=0
+                                    Tlist=[]
+                                    ans1=list1.index(Slist[i])
+                                    ans2=list1.index(Dlist[j])
+                                    Tlist.append(str(ans1+1))
+                                    Tlist.append(str(ans2+1)+chr(97+jj))
+                                    for p in range(len(index1)):
+                                        if index1[p]!=index2[p]:
+                                            if len(index1[p])>=3 and len(index2[p])>=3:
+                                                q=1
+                                                break
+                                            elif len(index1[p])<3:
+                                                Tlist.append(index1[p])
+                                                Tlist.append(index2[p])
+                                                for kk in range(len(temp1[0][1])):
+                                                    if temp1[0][1][kk]==index1[p]:
+                                                        temp1[0][1][kk]=index2[p]
+                                            else:
+                                                Tlist.append(index2[p])
+                                                Tlist.append(index1[p])
+                                                for k in range(len(temp2)):
+                                                    for kk in range(len(temp2[k][1])):
+                                                        if temp2[k][1][kk]==index2[p]:
+                                                            temp2[k][1][kk]=index1[p]
+                                    if q==0:
+                                        newlist=[] 
+                                        for k in range(len(temp2)):
+                                            if k!=jj:
+                                                newlist.append(temp2[k])
+                                        list1.append(newlist)
+                                        list2.append(Tlist)
+                                        if len(newlist)==1:
+                                            for k in range (len(Slist)):
+                                                str12=newlist[0][0]
+                                                str22=Slist[k][0][0]
+                                                if str12[0]=='~' and str22[0]!='~' or str22[0]=='~' and str12[0]!='~':
+                                                    str12=str12.lstrip('~')
+                                                    str22=str22.lstrip('~')
+                                                    if str12==str22:
+                                                        if newlist[0][1]==Slist[k][0][1]:
+                                                            list1.append([])
+                                                            list2.append([])
+                                                            list2[len(list2)-1].append(str(list1.index(newlist)+1))
+                                                            list2[len(list2)-1].append(str(list1.index(Slist[k])+1))
+                                                            PrintList(list1,list2)
+                                                            return
+                                                        else:
+                                                            q2=0
+                                                            Tlist2=[]
+                                                            ans12=list1.index(newlist)
+                                                            ans22=list1.index(Slist[k])
+                                                            Tlist2.append(str(ans12+1))
+                                                            Tlist2.append(str(ans22+1))
+                                                            for kk in range(len(Slist[k][0][1])):
+                                                                if len(newlist[0][1][kk])>=3 and len(Slist[k][0][1][kk])>=3:
+                                                                    q2=1
+                                                                    break
+                                                                elif len(newlist[0][1][kk])<3:
+                                                                    Tlist2.append(newlist[0][1][kk])
+                                                                    Tlist2.append(Slist[k][0][1][kk])
+                                                                else: 
+                                                                    Tlist2.append(Slist[k][0][1][kk])
+                                                                    Tlist2.append(newlist[0][1][kk])
+                                                            if q2==0:
+                                                                list2.append(Tlist2)
+                                                                list1.append([])
+                                                                PrintList(list1,list2)
+                                                                return
+                                                Slist.append(newlist)
+                                        else:
+                                            Dlist.append(newlist)
+        i=i+1
+        if i==len(Slist):
+            i=0
+def PrintList(list1,list2):
+    for i in range(len(list1)):
+        Str1=str(i+1)
+        if len(list2[i])!=0:
+            Str1+=' R['+list2[i][0]+','+list2[i][1]+']'
+            for j in range(2,len(list2[i]),2):
+                if j==2:
+                    Str1+='{'
+                Str1+=list2[i][j]+'='+list2[i][j+1]
+                if j!=len(list2[i])-2:
+                    Str1+=','
+                else:
+                    Str1+='}'
+            Str1+=' ='
+        newlist=[]
+        for j in range(len(list1[i])):
+            Str2=list1[i][j][0]
+            for k in range(len(list1[i][j][1])):
+                if k==0:
+                    Str2+='('
+                Str2+=list1[i][j][1][k]
+                if k!=len(list1[i][j][1])-1:
+                    Str2+=','
+                else:
+                    Str2+=')'
+            newlist.append(Str2)
+        print(Str1,tuple(newlist))
+KB = {('A(tony)',),('A(mike)',),('A(john)',),('L(tony,rain)',),('L(tony,snow)',),('~A(x)','S(x)','C(x)'),('~C(y)','~L(y,rain)'),('L(z,snow)','~S(z)'),
+('~L(tony,u)','~L(mike,u)'),('L(tony,v)','L(mike,v)'),('~A(w)','~C(w)','S(w)')}
+ResolutionF0L(KB)
